@@ -1,0 +1,15 @@
+localhost - - [08/Aug/2024:13:11:22 -0500] "POST / HTTP/1.1" 401 221 CUPS-Get-Devices successful-ok
+localhost - - [08/Aug/2024:13:11:25 -0500] "POST / HTTP/1.1" 200 3867 CUPS-Get-PPDs -
+localhost - - [08/Aug/2024:13:11:28 -0500] "POST /admin/ HTTP/1.1" 401 9737 CUPS-Add-Modify-Printer successful-ok
+localhost - hopglascock [08/Aug/2024:13:11:28 -0500] "POST /admin/ HTTP/1.1" 200 9737 CUPS-Add-Modify-Printer successful-ok
+localhost - hopglascock [08/Aug/2024:13:11:22 -0500] "POST / HTTP/1.1" 200 458 CUPS-Get-Devices -
+localhost - - [08/Aug/2024:13:11:51 -0500] "POST /printers/Brother_MFC_L2710DW_series HTTP/1.1" 200 1552 Create-Job successful-ok
+localhost - - [08/Aug/2024:13:11:51 -0500] "POST /printers/Brother_MFC_L2710DW_series HTTP/1.1" 200 58519 Send-Document successful-ok
+localhost - - [08/Aug/2024:13:11:51 -0500] "POST / HTTP/1.1" 200 317 Set-Job-Attributes successful-ok
+localhost - - [08/Aug/2024:13:11:52 -0500] "POST / HTTP/1.1" 401 173 CUPS-Get-Document successful-ok
+localhost - hopglascock [08/Aug/2024:13:11:52 -0500] "POST / HTTP/1.1" 200 58406 CUPS-Get-Document successful-ok
+localhost - - [08/Aug/2024:13:13:27 -0500] "POST /printers/Brother_MFC_L2710DW_series HTTP/1.1" 200 1329 Create-Job successful-ok
+localhost - - [08/Aug/2024:13:13:27 -0500] "POST /printers/Brother_MFC_L2710DW_series HTTP/1.1" 200 58519 Send-Document successful-ok
+localhost - - [08/Aug/2024:13:13:27 -0500] "POST / HTTP/1.1" 200 317 Set-Job-Attributes successful-ok
+localhost - - [08/Aug/2024:13:13:27 -0500] "POST / HTTP/1.1" 401 173 CUPS-Get-Document successful-ok
+localhost - hopglascock [08/Aug/2024:13:13:27 -0500] "POST / HTTP/1.1" 200 58406 CUPS-Get-Document successful-ok

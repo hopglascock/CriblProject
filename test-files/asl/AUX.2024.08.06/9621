@@ -1,0 +1,24 @@
+timestamp: 1722875786909
+crashReporterKey: "33820928-19A0-EF94-1C6E-9F90CB7CFE6E"
+isAnonymous: true
+deviceConfigId: 7358
+investigationId: 0
+model: "Mac15,8"
+softwareBuild: "23D56"
+buildtype: "User"
+tz_offset: -18000
+metric_file_type: 1
+metriclogs {
+  triggerTime: 1722875781799
+  triggerId: 520198
+  profileId: 146
+  iMessageQueryFinishedHotshipSingleComponent {
+    timestamp: 1722862800000
+    success: 1
+    connectionType: 2
+    queryDuration: 0
+    isEmail: 1
+    resultCode: 1
+    genericError: 0
+  }
+}
