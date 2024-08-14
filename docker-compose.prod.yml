@@ -1,5 +1,3 @@
-
-
 services:
   ts-node-docker:
     build:
