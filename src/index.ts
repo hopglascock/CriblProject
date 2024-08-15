@@ -1,19 +1,12 @@
 import express, { NextFunction, Request, Response } from "express";
 import fs from "fs";
 import path from "path";
-import { stdout as output } from "process";
-import { Readable, Transform, TransformCallback } from "stream";
-import readline from "readline";
-import { Writable } from "stream";
+import { Transform } from "stream";
 import { pipeline, PassThrough } from "stream";
 import { readFile } from "./fileReader";
-import createError from "http-errors";
 // import { promises as fs, createReadStream } from "fs"
 
 const app = express();
-// const hopPath = path.resolve(__dirname, "../test-files/wikipedia.txt");
-// const hopPath = path.resolve(__dirname, "../test-files/out20.txt");
-const hopPath = path.resolve(__dirname, "../test-files/hop");
 
 function isErrnoException(e: unknown): e is NodeJS.ErrnoException {
   if ("code" in (e as any)) return true;
@@ -72,13 +65,31 @@ app.get("/logs", async (req, res, next) => {
 const filterHopStream = (searchString: string) =>
   new Transform({
     readableObjectMode: true,
-    transform(logEntry, encoding, callback) {
-      if (logEntry.includes(searchString)) {
-        this.push(logEntry);
+    transform(chunk, encoding, callback) {
+      if (chunk.includes(searchString)) {
+        this.push(chunk);
       }
       callback();
     },
   });
+
+const createFilter = (allow: number) => {
+  let count = 0;
+
+  let transform = new Transform({
+    readableObjectMode: true,
+    transform(chunk, encoding, callback) {
+      count++;
+      if (count <= allow) {
+        this.push(chunk);
+      }
+
+      callback();
+    },
+  });
+
+  return transform;
+};
 
 app.get("/logs/:fileName", async (req: Request, res: Response, next) => {
   const { search } = req.query;
@@ -93,51 +104,23 @@ app.get("/logs/:fileName", async (req: Request, res: Response, next) => {
     return res.status(400).send('Query parameter "param" must be a string');
   }
 
+  let readstream = readFile(filePath, 1028 * 1000);
   try {
-    // todo: chunksizze
-    // const hop = await readFile(filePath);
-    let readstream = readFile(filePath, 1028 * 1000);
+    // todo: chunksize
     pipeline(
-      readFile(filePath, 1028 * 1000),
+      readstream,
       search ? filterHopStream(search) : new PassThrough(), // boy i kinda hate this
+      true ? createFilter(4) : new PassThrough(),
       res,
       (err) => {
-        if (err) console.log(err);
+        if (err) {
+          console.log(err);
+        }
       }
     );
   } catch (err) {
     if (isErrnoException(err) && err.code === "ENOENT") res.sendStatus(404);
     else res.sendStatus(500);
-  }
-});
-
-app.get("/file", (req: Request, res: Response) => {
-  try {
-    readFile(hopPath, 1024 * 1000).pipe(res);
-  } catch (err) {
-    console.log(err);
-    res.sendStatus(500);
-  }
-});
-
-app.get("/big", async (req, res, next) => {
-  // const { id } = req.params;
-  try {
-    // const file = await File.findById(id);
-    // if(!file) {
-    //     return res.sendStatus(404);
-    // }
-
-    // const filePath = FILES_PATH . '/' . file.path;
-    // TODO: how to pick buffer size?
-    const data = readFile(hopPath, 1024 * 1000);
-
-    res.setHeader("Content-Type", "txt/plain");
-    res.setHeader("Content-Disposition", "attachment; filename=hop.txt");
-
-    data.pipe(res);
-  } catch (err) {
-    res.sendStatus(500);
   }
 });
 
