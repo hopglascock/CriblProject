@@ -2,76 +2,18 @@ import fs from "fs";
 import path from "path";
 import util from "util";
 import { pipeline } from "stream/promises";
+import { Readable, Transform, TransformCallback } from "stream";
 import readline from "readline";
 import { Request, Response } from "express";
 
-// const pipeline = util.promisify(stream.pipeline);
-// import { stdout as output } from "process";
-// import readline from "readline";
-// import { Writable } from "stream";
-// import createError from "http-errors";
-
-// const logStream = new Writable({
-//   write(chunk, encoding, callback) {
-//     console.log("hophop");
-//     console.log(chunk.toString());
-//     callback();
-//   },
-// });
-
-// let rd = readline.createInterface(
-//     fs.createReadStream(hopPath, {
-//         start: Math.max(pointer, 0),
-//         end: Math.max(this.pointer+this.chunkS, 0),
-//         encoding: "utf8",
-//     }),
-//     process.stdout,
-//   );
-//   rd.on("line", (line) => {
-//     console.log(line);
-//   });
-
-export async function readFile(
-  filePath: string,
-  chunkSize: number = 1024,
-): Promise<string> {
+// this will fail if chunkSize larger than line size
+export function readFile(filePath: string, chunkSize: number = 1024): Readable {
   const fileSize = fs.statSync(filePath).size;
-  let chunkS = chunkSize;
-  const pos = fileSize - chunkS < 0 ? 0 : fileSize - chunkS;
-  let pointer = fileSize - chunkS < 0 ? 0 : fileSize - chunkS;
+  let pointer = fileSize - chunkSize < 0 ? 0 : fileSize - chunkSize;
 
-  //   const stream = fs.createReadStream(filePath, {
-  //     start: Math.max(pointer, 0),
-  //     end: Math.max(pointer + chunkS, 0),
-  //     encoding: "utf8",
-  //   });
-
-  //   stream.on("error", function (err) {
-  //     throw err;
-  //   });
-  //   stream.on("end", function () {
-  //     // if(_this.buffer === null){
-  //     //     // callback
-  //     // //   cb(null, true);
-  //     // } else {
-  //     //     // recurse
-  //     //   _this.readLine(cb);
-  //     // }
-  //   });
-  //   stream.on("data", function (data) {
-  //     if (buffer === null) {
-  //       buffer = "";
-  //     }
-  //     buffer += data;
-  //     chunkS += data.length;
-  //   });
-
-  const pipelineAndLog = (
-    filePath: string,
-    // pointer: number,
-    // chunkS: number,
-  ) => {
-    async function logChunks(readable: any) {
+  async function pipelineAndLog(filePath: string) {
+    // TODO: reanme this
+    async function chunkify(readable: any) {
       // not sure if i want to use readline or do it myself
       const rl = readline.createInterface({
         input: readable,
@@ -81,59 +23,41 @@ export async function readFile(
       for await (const line of rl) {
         buffer.push(line);
       }
-      let shift = 0;
+
       if (pointer > 0) {
-        // does it mutate?
-        shift = buffer.shift()?.length || 0;
+        pointer += buffer.shift()?.length || 0;
       }
-      pointer += shift;
-      buffer.reverse();
-      console.log(buffer);
+      return buffer.reverse();
+      // return buffer;
     }
-    return pipeline(
-      fs.createReadStream(filePath, {
-        start: Math.max(pointer, 0),
-        end: Math.max(pointer + chunkS, 0),
-        encoding: "utf8",
-      }),
-      logChunks,
-    );
-  };
 
-  const ret = "";
+    let stream = fs.createReadStream(filePath, {
+      start: Math.max(pointer, 0),
+      end: Math.max(pointer + chunkSize, 0),
+      encoding: "utf8",
+    });
+    return await pipeline(stream, chunkify);
+  }
 
-  // this is messing with the order!! need to use generator?
-  do {
-    await pipelineAndLog(filePath);
-    pointer -= chunkS;
-  } while (pointer > 0);
+  // pointer += shift;
+  // TODO: backpressure check
+  // using generator isnt as fast (3x slower) but it looks way nicer
+  async function* generate() {
+    while (pointer + chunkSize > 0) {
+      for await (const chunk of await pipelineAndLog(filePath)) {
+        yield chunk;
+      }
+      pointer -= chunkSize;
+    }
+  }
 
-  await pipelineAndLog(filePath);
+  const addNewLine = new Transform({
+    readableObjectMode: true,
+    transform(logEntry, encoding, callback) {
+      this.push(logEntry + "\n");
 
-  return await fs.promises.readFile(filePath, {
-    encoding: "utf8",
+      callback();
+    },
   });
+  return Readable.from(generate()).pipe(addNewLine);
 }
-
-// const { once } = require('node:events');
-// const { createReadStream } = require('node:fs');
-// const { createInterface } = require('node:readline');
-
-// (async function processLineByLine() {
-//   try {
-//     const rl = createInterface({
-//       input: createReadStream('big-file.txt'),
-//       crlfDelay: Infinity,
-//     });
-
-//     rl.on('line', (line) => {
-//       // Process the line.
-//     });
-
-//     await once(rl, 'close');
-
-//     console.log('File processed.');
-//   } catch (err) {
-//     console.error(err);
-//   }
-// })();
