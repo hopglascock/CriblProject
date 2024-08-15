@@ -4,7 +4,6 @@ import path from "path";
 import { Transform } from "stream";
 import { pipeline, PassThrough } from "stream";
 import { readFile } from "./fileReader";
-// import { promises as fs, createReadStream } from "fs"
 
 const app = express();
 
@@ -27,20 +26,11 @@ const options = {
   apis: ["./src/routes*.js", "./src/index.ts"],
 };
 
-// const openapiSpecification = await swaggerJsdoc(options);
-
-app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerJsdoc(options)));
-
 app.get("/", (req, res) => {
-  fs.readFile(
-    path.resolve(__dirname, "../test-files/hop"),
-    "utf8",
-    (err, data) => {
-      res.send(`Hello hop! ${data}`);
-    }
-  );
+  res.redirect("/docs");
 });
 
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerJsdoc(options)));
 /**
  * @openapi
  * /logs:
@@ -50,6 +40,7 @@ app.get("/", (req, res) => {
  *       200:
  *         description: Returns a mysterious string.
  */
+
 app.get("/logs", async (req, res, next) => {
   const testDirectory = path.resolve(__dirname, "../test-files/");
 
@@ -62,7 +53,7 @@ app.get("/logs", async (req, res, next) => {
 });
 
 // Transform stream to filter specific paths
-const filterHopStream = (searchString: string) =>
+const filterStream = (searchString: string) =>
   new Transform({
     readableObjectMode: true,
     transform(chunk, encoding, callback) {
@@ -109,7 +100,7 @@ app.get("/logs/:fileName", async (req: Request, res: Response, next) => {
     // todo: chunksize
     pipeline(
       readstream,
-      search ? filterHopStream(search) : new PassThrough(), // boy i kinda hate this
+      search ? filterStream(search) : new PassThrough(), // boy i kinda hate this
       true ? createFilter(4) : new PassThrough(),
       res,
       (err) => {
