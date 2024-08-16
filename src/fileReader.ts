@@ -39,11 +39,15 @@ export function readFile(filePath: string, chunkSize: number = 1024): Readable {
   // TODO: backpressure check
   // using generator isnt as fast (3x slower in my testing) but it looks way nicer and i cant be bothered to fix it
   async function* generate() {
-    while (pointer + chunkSize > 0) {
-      for await (const chunk of await pipelineAndLog(filePath)) {
-        yield chunk;
+    try {
+      while (pointer + chunkSize > 0) {
+        for await (const chunk of await pipelineAndLog(filePath)) {
+          yield chunk;
+        }
+        pointer -= chunkSize;
       }
-      pointer -= chunkSize;
+    } catch (err) {
+      console.log("err");
     }
   }
 

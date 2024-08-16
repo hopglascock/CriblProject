@@ -1,7 +1,8 @@
 import express, { Request, Response } from "express";
 import fs from "fs";
 import path from "path";
-import { pipeline, PassThrough } from "stream";
+import { PassThrough } from "stream";
+import { pipeline } from "stream/promises";
 import { readFile } from "../fileReader";
 import { createTakeTransform, filterStream } from "../TransformFilters";
 
@@ -64,6 +65,8 @@ router.get("/", async (req, res) => {
  *     responses:
  *       "200":
  *         description: Successful operation
+ *       "404":
+ *         description: do i really have to spell this one out?
  */
 router.get("/:fileName", async (req: Request, res: Response) => {
   const { fileName } = req.params;
@@ -78,25 +81,24 @@ router.get("/:fileName", async (req: Request, res: Response) => {
     return res.status(400).send('Query parameter "take" must be a number');
   }
 
-  // TODO: ENOENT error handling
+  // I want to catch an error surfaced by the stream but its being swalled somewhere :(
+  if (!fs.existsSync("foo.txt")) {
+    return res.sendStatus(404);
+  }
 
+  // This chunksize is a bit arbitrary
   let readstream = readFile(filePath, 1028 * 1000);
+
   try {
-    // todo: chunksize
-    pipeline(
+    await pipeline(
       readstream,
       search ? filterStream(search) : new PassThrough(), // boy i kinda hate this
       take ? createTakeTransform(take) : new PassThrough(),
-      res,
-      (err) => {
-        if (err) {
-          console.log(err);
-        }
-      }
+      res
     );
   } catch (err) {
-    if (isErrnoException(err) && err.code === "ENOENT") res.sendStatus(404);
-    else res.sendStatus(500);
+    console.log(err);
+    res.sendStatus(500);
   }
 });
 
