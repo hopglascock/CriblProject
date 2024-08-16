@@ -36,7 +36,6 @@ export function readFile(filePath: string, chunkSize: number = 1024): Readable {
     return await pipeline(stream, chunkify);
   }
 
-  // TODO: backpressure check
   // using generator isnt as fast (3x slower in my testing) but it looks way nicer and i cant be bothered to fix it
   async function* generate() {
     try {

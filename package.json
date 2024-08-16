@@ -6,6 +6,9 @@
   "scripts": {
     "start": "NODE_PATH=./build node build/app.tx",
     "build": "tsc -p .",
+    "lint": "npx eslint .",
+    "prittier": "npx prettier . --write",
+    "dev-serve": "node --inspect=0.0.0.0:9229 --nolazy -r ts-node/register src/index.ts",
     "dev": "nodemon src/app.ts"
   },
   "author": "",
