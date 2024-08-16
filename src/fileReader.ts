@@ -1,10 +1,7 @@
 import fs from "fs";
-import path from "path";
-import util from "util";
 import { pipeline } from "stream/promises";
-import { Readable, Transform, TransformCallback } from "stream";
+import { Readable, Transform } from "stream";
 import readline from "readline";
-import { Request, Response } from "express";
 
 // this will fail if chunkSize larger than line size
 export function readFile(filePath: string, chunkSize: number = 1024): Readable {
