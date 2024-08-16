@@ -1,4 +1,3 @@
-import createError from "http-errors";
 import express, { json, urlencoded } from "express";
 import logRouter from "./routes/logRouter";
 import generateLogsRouter from "./routes/generateLogsRouter";

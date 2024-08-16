@@ -1,6 +1,9 @@
 import fs from "fs";
 
 
+// This was a nother method of reading the files i was trying out, I wanted it to be more streamlined
+// and easier to read but I ran out of time to make it work.
+
 export function readFile(filePath: string, chunkSize: number = 1024): any {
   const fileSize = fs.statSync(filePath).size;
   let pointer = fileSize - chunkSize < 0 ? 0 : fileSize - chunkSize;
@@ -23,12 +26,12 @@ export function readFile(filePath: string, chunkSize: number = 1024): any {
         let buffer = Buffer.alloc(chunkSize);
         fileHandle.read(buffer, 0, buffer.length, pointer);
         // let hop = await fileHandle.createReadStream(readOptions);
-        let hop = buffer
+        let lines = buffer
           .toString("utf-8")
           .replace("\r\n", "\n")
           .replace("\r", "\n")
           .split("\n");
-        for (const line of hop) {
+        for (const line of lines) {
           lines.push(line);
         }
         if (pointer > 0) {

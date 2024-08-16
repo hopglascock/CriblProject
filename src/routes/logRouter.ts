@@ -1,11 +1,8 @@
-import express, { NextFunction, Request, Response } from "express";
+import express, { Request, Response } from "express";
 import fs from "fs";
 import path from "path";
-import { Transform } from "stream";
 import { pipeline, PassThrough } from "stream";
 import { readFile } from "../fileReader";
-import swaggerUi from "swagger-ui-express";
-import swaggerJsdoc from "swagger-jsdoc";
 import { createTakeTransform, filterStream } from "../TransformFilters";
 
 function isErrnoException(e: unknown): e is NodeJS.ErrnoException {

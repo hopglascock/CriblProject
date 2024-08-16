@@ -1,4 +1,4 @@
-import express, { NextFunction, Request, Response } from "express";
+import express, { Request, Response } from "express";
 import fs from "fs";
 import path from "path";
 import { pipeline } from "stream/promises";
@@ -19,33 +19,6 @@ const router = express.Router();
 
 const byteSize = (str: string) => new Blob([str]).size;
 
-/**
-/logs/{fileName}:
-  get:
-    description: Returns a file in /var/log. Optionally filtered by search query, and limited to a number of lines.
-    parameters:
-      - name: fileName
-        in: path
-        description: The name of the file to retrieve
-        required: true
-        schema:
-          type: string
-      - name: search
-        in: query
-        required: false
-        description: The search query to filter the logs by
-        schema:
-          type: string
-      - name: take
-        in: query
-        required: false
-        description: The number of lines to return
-        schema:
-          type: number
-    responses:
-      "200":
-        description: Successful operation
- */
 /**
  * @openapi
  * /generateLogs:

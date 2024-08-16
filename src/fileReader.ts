@@ -10,8 +10,8 @@ export function readFile(filePath: string, chunkSize: number = 1024): Readable {
 
   async function pipelineAndLog(filePath: string) {
     // TODO: reanme this
+    // Tired hop and the end of project - "but whyyyyyy i like it!"
     async function chunkify(readable: any) {
-      // not sure if i want to use readline or do it myself
       const rl = readline.createInterface({
         input: readable,
         crlfDelay: Infinity,
@@ -36,9 +36,8 @@ export function readFile(filePath: string, chunkSize: number = 1024): Readable {
     return await pipeline(stream, chunkify);
   }
 
-  // pointer += shift;
   // TODO: backpressure check
-  // using generator isnt as fast (3x slower) but it looks way nicer
+  // using generator isnt as fast (3x slower in my testing) but it looks way nicer and i cant be bothered to fix it
   async function* generate() {
     while (pointer + chunkSize > 0) {
       for await (const chunk of await pipelineAndLog(filePath)) {
